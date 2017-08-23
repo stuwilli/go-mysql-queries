@@ -11,10 +11,11 @@ import (
 
 func main() {
 
-	var user, password, dbName string
+	var user, password, dbName, conn string
 	flag.StringVar(&user, "user", "root", "The DB username (required)")
 	flag.StringVar(&password, "password", "@", "The DB password")
 	flag.StringVar(&dbName, "db", "", "The DB name")
+	flag.StringVar(&conn, "s", "", "The connection string")
 	flag.Parse()
 
 	if dbName == "" {
@@ -22,20 +23,27 @@ func main() {
 		return
 	}
 
-	InitConnection(user + ":" + password + "/" + dbName)
+	if conn == "" {
+
+		InitConnection(user + ":" + password + "/" + dbName)
+
+	} else {
+
+		InitConnection(conn + "/" + dbName)
+	}
 
 	db := DB()
-	OutputQueries(db)
+	OutputQueries(db, dbName)
 }
 
 //OutputQueries ....
-func OutputQueries(db *sql.DB) {
+func OutputQueries(db *sql.DB, dbName string) {
 
 	tables := GetTableNames(db)
 
 	for i := 0; i < len(tables); i++ {
 
-		table := fmt.Sprintf("%s.%s", "gmail_notifier", tables[i])
+		table := fmt.Sprintf("%s.%s", dbName, tables[i])
 		pk := GetPrimaryKey(db, table)
 		cols := GetColumnNames(db, table)
 		fmt.Println("\n------ " + table + " ------")
